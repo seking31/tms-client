@@ -11,24 +11,25 @@ import {
 } from '@angular/forms';
 
 @Component({
-  selector: 'app-projects-find',
+  selector: 'app-project-find',
   standalone: true,
   imports: [ReactiveFormsModule, CommonModule, RouterLink, NgIf, NgForOf],
   template: `
-    <div class="projects-find-page" [formGroup]="projectForm">
-      <h1 class="projects-find-page_title">Find projects</h1>
-      <h4 class="projects-find-page_subtitle">
+    <div class="project-find-page" [formGroup]="projectForm">
+      <h1 class="project-find-page_title">Find Project</h1>
+      <h4 class="project-find-page_subtitle">
         Fill in the search bar to find projects
       </h4>
 
-      <div class="add-projects-page_form-group">
-        <label for="term" class="projects-add-page_form-label"
-          >Projects Name</label
-        >
+      <div class="add-project-page_form-group">
+        <label for="term" class="project-add-page_form-label">
+          Project Name
+        </label>
+
         <input
           type="text"
           id="term"
-          class="projects-add-page_form-control"
+          class="project-add-page_form-control"
           formControlName="term"
         />
 
@@ -41,45 +42,50 @@ import {
           "
         >
           <small *ngIf="projectForm.controls['term'].errors?.['required']">
-            Projects search term is required.
+            Project search term is required.
           </small>
           <small *ngIf="projectForm.controls['term'].errors?.['minlength']">
-            Projects search term must be at least 3 characters long.
+            Project search term must be at least 3 characters long.
           </small>
         </div>
       </div>
 
       <button
         type="button"
-        class="projects_btn"
+        class="project_btn"
         (click)="onSubmit()"
         [disabled]="projectForm.invalid"
       >
-        Search Projects
+        Search Project
       </button>
 
       <!-- Results section -->
       <div *ngIf="searched">
         <h3>Search Results</h3>
+
         <ul *ngIf="projects.length > 0; else noProjects">
           <li *ngFor="let project of projects" class="project-item">
             <strong>Name:</strong> {{ project.name }}<br />
 
             <small *ngIf="project.description">
-              <strong>Description:</strong> {{ project.description }} </small
-            ><br />
+              <strong>Description:</strong> {{ project.description }}
+            </small>
+            <br />
 
             <small *ngIf="project.dateCreated">
-              <strong>Created:</strong> {{ project.dateCreated }} </small
-            ><br />
+              <strong>Created:</strong> {{ project.dateCreated }}
+            </small>
+            <br />
 
             <small *ngIf="project.dateModified">
-              <strong>Modified:</strong> {{ project.dateModified }} </small
-            ><br />
+              <strong>Modified:</strong> {{ project.dateModified }}
+            </small>
+            <br />
 
             <small *ngIf="project.projectId">
-              <strong>Project ID:</strong> {{ project.projectId }} </small
-            ><br />
+              <strong>Project ID:</strong> {{ project.projectId }}
+            </small>
+            <br />
           </li>
         </ul>
       </div>
@@ -185,7 +191,7 @@ export class ProjectFindComponent {
     private projectService: ProjectService
   ) {}
 
-  onSubmit() {
+  onSubmit(): void {
     if (this.projectForm.invalid) {
       this.projectForm.markAllAsTouched();
       return;

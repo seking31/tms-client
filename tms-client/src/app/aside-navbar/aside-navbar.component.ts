@@ -41,6 +41,9 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
           <a routerLink="/projects/projects-add">Add Project</a>
         </li>
         <li>
+          <a routerLink="/projects/projects-find">Search Project</a>
+        </li>
+        <li>
           <a routerLink="/projects/project-update">Update Project</a>
         </li>
         <li>

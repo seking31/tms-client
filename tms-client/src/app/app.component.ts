@@ -73,7 +73,7 @@ import { NgOptimizedImage } from '@angular/common';
               </li>
               <li class="nav_item">
                 <a class="navbar_link" routerLink="/projects/projects-find"
-                  >Find Project</a
+                  >Search Project</a
                 >
               </li>
               <li class="nav_item">
