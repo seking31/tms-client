@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
 import { TaskService } from '../tasks.service';
 import { Task } from '../task';
 
@@ -14,14 +13,21 @@ import { Task } from '../task';
       <label class="header" for="taskSelect"
         ><strong>Select Task ID:</strong></label
       >
-      <select id="taskSelect" (change)="onSelectId($event)">
+
+      <select
+        id="taskSelect"
+        [disabled]="loadingIds"
+        (change)="onSelectId($event)"
+      >
         <option value="">-- Select an ID --</option>
-        <option value="650c1f1e1c9d440000a1b1c1">
-          650c1f1e1c9d440000a1b1c1
+        <option *ngFor="let t of tasksList" [value]="t._id">
+          {{ t._id }}
         </option>
       </select>
 
-      <div *ngIf="loading">Loading task…</div>
+      <div *ngIf="loadingIds">Loading task IDs…</div>
+
+      <div *ngIf="loading && !loadingIds">Loading task…</div>
 
       <div *ngIf="error && !loading" class="error">
         {{ error }}
@@ -48,21 +54,52 @@ import { Task } from '../task';
       .header {
         margin: 15px;
       }
+      .error {
+        color: red;
+        margin-top: 10px;
+      }
     `,
   ],
 })
 export class ReadTaskComponent implements OnInit {
+  // dropdown data
+  tasksList: Task[] = [];
+  loadingIds = false;
+
+  // selected task details
   task?: Task;
   loading = false;
   error?: string;
 
-  constructor(private route: ActivatedRoute, private tasks: TaskService) {}
+  constructor(private tasks: TaskService) {}
 
   ngOnInit(): void {
-    // No task loaded until selection
+    this.fetchTaskIds();
   }
 
-  onSelectId(event: Event) {
+  private fetchTaskIds(): void {
+    this.loadingIds = true;
+    this.error = undefined;
+
+    this.tasks.getTasks().subscribe({
+      next: (list: Task[]) => {
+        // Keep only tasks that actually have an _id
+        this.tasksList = (list ?? []).filter((t) => !!t?._id);
+        this.loadingIds = false;
+
+        if (this.tasksList.length === 0) {
+          this.error = 'No tasks found.';
+        }
+      },
+      error: (err: any) => {
+        this.loadingIds = false;
+        this.error = `Unable to load task IDs. ${err?.message ?? ''}`.trim();
+        console.error('Error loading task IDs:', err);
+      },
+    });
+  }
+
+  onSelectId(event: Event): void {
     const id = (event.target as HTMLSelectElement).value;
 
     if (!id) {
@@ -74,7 +111,7 @@ export class ReadTaskComponent implements OnInit {
     this.loadTask(id);
   }
 
-  loadTask(id: string) {
+  private loadTask(id: string): void {
     this.loading = true;
     this.error = undefined;
 
@@ -83,9 +120,10 @@ export class ReadTaskComponent implements OnInit {
         this.task = t;
         this.loading = false;
       },
-      error: () => {
-        this.error = 'Unable to load task.';
+      error: (err: any) => {
+        this.error = `Unable to load task. ${err?.message ?? ''}`.trim();
         this.loading = false;
+        console.error('Error loading task by id:', err);
       },
     });
   }
