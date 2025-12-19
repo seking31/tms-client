@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Project } from '../project';
 import { ProjectService } from '../projects.service';
@@ -14,15 +14,22 @@ import { ProjectService } from '../projects.service';
         <strong>Select Project ID to delete:</strong>
       </label>
 
-      <select id="projectSelect" (change)="onSelectId($event)">
+      <select
+        id="projectSelect"
+        [disabled]="loadingIds || loading"
+        (change)="onSelectId($event)"
+      >
         <option value="">-- Select an ID --</option>
-        <option value="650c1f1e1c9d440000a1b1c1">
-          650c1f1e1c9d440000a1b1c1
+        <option *ngFor="let p of projectsList" [value]="p._id">
+          {{ p._id }}
         </option>
       </select>
 
-      <!-- Loading -->
-      <div *ngIf="loading">Deleting project…</div>
+      <!-- Loading project IDs -->
+      <div *ngIf="loadingIds">Loading project IDs…</div>
+
+      <!-- Deleting -->
+      <div *ngIf="loading && !loadingIds">Deleting project…</div>
 
       <!-- Error Message -->
       <div *ngIf="error && !loading" class="error">
@@ -54,14 +61,44 @@ import { ProjectService } from '../projects.service';
     `,
   ],
 })
-export class DeleteProjectComponent {
+export class DeleteProjectComponent implements OnInit {
+  // dropdown data
+  projectsList: Project[] = [];
+  loadingIds = false;
+
+  // delete state
   loading = false;
   error?: string;
   successMessage?: string;
 
   constructor(private projects: ProjectService) {}
 
-  onSelectId(event: Event) {
+  ngOnInit(): void {
+    this.fetchProjectIds();
+  }
+
+  private fetchProjectIds(): void {
+    this.loadingIds = true;
+    this.error = undefined;
+
+    this.projects.getProjects().subscribe({
+      next: (list: Project[]) => {
+        this.projectsList = (list ?? []).filter((p) => !!p?._id);
+        this.loadingIds = false;
+
+        if (this.projectsList.length === 0) {
+          this.error = 'No projects found.';
+        }
+      },
+      error: (err: any) => {
+        this.loadingIds = false;
+        this.error = `Unable to load project IDs. ${err?.message ?? ''}`.trim();
+        console.error('Error loading project IDs:', err);
+      },
+    });
+  }
+
+  onSelectId(event: Event): void {
     const id = (event.target as HTMLSelectElement).value;
 
     // Reset messages
@@ -76,17 +113,21 @@ export class DeleteProjectComponent {
     this.deleteProject(id);
   }
 
-  deleteProject(id: string) {
+  private deleteProject(id: string): void {
     this.loading = true;
 
     this.projects.deleteProjects(id).subscribe({
-      next: (res) => {
+      next: (res: { message: string }) => {
         this.loading = false;
-        this.successMessage = res.message; // <- show backend message
+        this.successMessage = res.message;
+
+        // remove deleted project from dropdown
+        this.projectsList = this.projectsList.filter((p) => p._id !== id);
       },
-      error: () => {
+      error: (err: any) => {
         this.loading = false;
-        this.error = 'Unable to delete task.';
+        this.error = `Unable to delete project. ${err?.message ?? ''}`.trim();
+        console.error('Error deleting project:', err);
       },
     });
   }
