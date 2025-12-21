@@ -39,17 +39,6 @@ import { Task } from '../task';
         {{ statusMessage }}
       </p>
 
-      <!-- Assertive error region -->
-      <p
-        *ngIf="errorMessage && !searching"
-        class="status error"
-        role="alert"
-        aria-live="assertive"
-        aria-atomic="true"
-      >
-        {{ errorMessage }}
-      </p>
-
       <div id="main-content" class="content" tabindex="-1" #mainContent>
         <form
           class="form"

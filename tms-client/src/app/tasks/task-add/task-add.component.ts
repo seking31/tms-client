@@ -57,17 +57,6 @@ import { ProjectService } from '../../projects/projects.service';
         {{ statusMessage }}
       </p>
 
-      <!-- Assertive error region for failures -->
-      <p
-        *ngIf="errorMessage && !submitting"
-        class="status error"
-        role="alert"
-        aria-live="assertive"
-        aria-atomic="true"
-      >
-        {{ errorMessage }}
-      </p>
-
       <div
         id="main-content"
         class="add-task-page_card"

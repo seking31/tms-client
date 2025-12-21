@@ -46,17 +46,6 @@ import { TaskService } from '../tasks.service';
         {{ serverMessage }}
       </p>
 
-      <!-- Assertive error message (separate to ensure SR reads it promptly) -->
-      <p
-        *ngIf="!loading && serverMessageType === 'error' && serverMessage"
-        class="status error sr-alert"
-        role="alert"
-        aria-live="assertive"
-        aria-atomic="true"
-      >
-        {{ serverMessage }}
-      </p>
-
       <!-- Results -->
       <div class="content" tabindex="-1" #content>
         <ul
