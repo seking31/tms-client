@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -7,280 +7,346 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import { NgIf } from '@angular/common';
-import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { Router, RouterLink } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 import { AddProjectDTO } from '../project';
 import { ProjectService } from '../projects.service';
 
 @Component({
   selector: 'app-add-projects',
   standalone: true,
-  imports: [ReactiveFormsModule, NgIf],
+  imports: [ReactiveFormsModule, CommonModule, RouterLink],
   template: `
-    <main class="task-add-page">
-      <h1 class="task-add-page_title" id="page-title">Add New Project</h1>
-      <p class="task-add-page_subtitle" id="page-subtitle">
-        Create a project by providing its name, description, and dates.
+    <section class="page" aria-labelledby="page-title">
+      <a class="skip-link" href="#main-content">Skip to add project form</a>
+
+      <header class="page-header">
+        <h1 class="page_title" id="page-title">Add new project</h1>
+        <p class="page_subtitle" id="page-subtitle">
+          Create a project by providing its name, description, and dates.
+        </p>
+      </header>
+
+      <!-- Global messages -->
+      <p
+        *ngIf="statusMessage"
+        class="status"
+        [class.success]="statusKind === 'success'"
+        [class.error]="statusKind === 'error'"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        {{ statusMessage }}
       </p>
 
-      <!-- Live region for submission outcomes -->
-      <div class="status" aria-live="polite" aria-atomic="true" role="status">
-        <p *ngIf="successMessage" class="success">{{ successMessage }}</p>
-        <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
-      </div>
-
-      <form
-        [formGroup]="projectForm"
-        (ngSubmit)="onSubmit()"
-        novalidate
-        aria-labelledby="page-title page-subtitle"
+      <p
+        *ngIf="errorMessage && !isSubmitting"
+        class="status error"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
       >
-        <!-- Form-level error summary (announced + focusable) -->
-        <div
-          *ngIf="showErrorSummary"
-          #errorSummary
-          class="error-summary"
-          tabindex="-1"
-          role="alert"
-          aria-live="assertive"
-          aria-atomic="true"
+        {{ errorMessage }}
+      </p>
+
+      <div id="main-content" class="card" tabindex="-1" #mainContent>
+        <form
+          [formGroup]="projectForm"
+          (ngSubmit)="onSubmit()"
+          class="form"
+          novalidate
+          aria-labelledby="page-title page-subtitle"
         >
-          <h2 class="error-summary__title">Please fix the following</h2>
-          <ul class="error-summary__list">
-            <li *ngIf="nameCtrl.invalid">
-              <a href="#" (click)="focusField($event, nameInput)"
-                >Project Name is required.</a
-              >
-            </li>
-            <li *ngIf="projectForm.errors?.dateRangeInvalid">
-              <a href="#" (click)="focusField($event, endDateInput)"
-                >End Date must be on or after Start Date.</a
-              >
-            </li>
-          </ul>
-        </div>
-
-        <div class="task-add-page_form-group">
-          <label for="name" class="task-add-page_form-label"
-            >Project Name</label
+          <!-- Form-level error summary (focusable + announced) -->
+          <section
+            *ngIf="showErrorSummary"
+            #errorSummary
+            class="error-summary"
+            tabindex="-1"
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
+            aria-label="Form errors"
           >
+            <h2 class="error-summary__title">Please fix the following</h2>
+            <ul class="error-summary__list">
+              <li *ngIf="isFieldInvalid('name')">
+                <a href="#" (click)="focusField($event, nameInput)">
+                  Project name is required and must be at least 3 characters.
+                </a>
+              </li>
+              <li *ngIf="dateRangeInvalid">
+                <a href="#" (click)="focusField($event, endDateInput)">
+                  End date must be on or after start date.
+                </a>
+              </li>
+            </ul>
+          </section>
 
-          <input
-            #nameInput
-            id="name"
-            type="text"
-            class="task-add-page_form-control"
-            formControlName="name"
-            placeholder="Enter project name"
-            autocomplete="off"
-            [attr.aria-invalid]="
-              nameCtrl.invalid && (nameCtrl.touched || submitted)
-                ? 'true'
-                : null
-            "
+          <!-- Name -->
+          <div class="field">
+            <label for="name" class="label">
+              Project name <span aria-hidden="true">*</span>
+            </label>
+
+            <input
+              #nameInput
+              id="name"
+              type="text"
+              class="control"
+              formControlName="name"
+              autocomplete="off"
+              placeholder="Enter project name"
+              [attr.aria-required]="true"
+              [attr.aria-invalid]="isFieldInvalid('name') ? 'true' : null"
+              [attr.aria-describedby]="
+                'name-hint' + (isFieldInvalid('name') ? ' name-error' : '')
+              "
+            />
+
+            <p id="name-hint" class="hint">Minimum 3 characters.</p>
+
+            <p
+              *ngIf="isFieldInvalid('name')"
+              id="name-error"
+              class="field-error"
+              role="alert"
+            >
+              <span *ngIf="nameCtrl.errors?.['required']"
+                >Project name is required.</span
+              >
+              <span *ngIf="nameCtrl.errors?.['minlength']">
+                Project name must be at least 3 characters.
+              </span>
+            </p>
+          </div>
+
+          <!-- Description -->
+          <div class="field">
+            <label for="description" class="label">Description</label>
+
+            <textarea
+              id="description"
+              rows="4"
+              class="control"
+              formControlName="description"
+              placeholder="Brief description of the project"
+              [attr.aria-describedby]="'description-hint'"
+            ></textarea>
+
+            <p id="description-hint" class="hint">
+              Optional. A short description helps others understand the scope.
+            </p>
+          </div>
+
+          <!-- Dates -->
+          <fieldset
+            class="fieldset"
             [attr.aria-describedby]="
-              nameCtrl.invalid && (nameCtrl.touched || submitted)
-                ? 'name-hint name-error'
-                : 'name-hint'
+              dateRangeInvalid ? 'date-range-error' : null
             "
-          />
-
-          <small id="name-hint" class="hint">Minimum 3 characters.</small>
-
-          <small
-            id="name-error"
-            class="error"
-            *ngIf="nameCtrl.invalid && (nameCtrl.touched || submitted)"
           >
-            <span *ngIf="nameCtrl.errors?.['required']"
-              >Project Name is required.</span
+            <legend class="legend">Project dates</legend>
+
+            <div class="field">
+              <label for="startDate" class="label">Start date</label>
+              <input
+                #startDateInput
+                id="startDate"
+                type="date"
+                class="control"
+                formControlName="startDate"
+                [attr.aria-invalid]="
+                  dateRangeInvalid && submitted ? 'true' : null
+                "
+              />
+            </div>
+
+            <div class="field">
+              <label for="endDate" class="label">End date</label>
+              <input
+                #endDateInput
+                id="endDate"
+                type="date"
+                class="control"
+                formControlName="endDate"
+                [attr.aria-invalid]="
+                  dateRangeInvalid && submitted ? 'true' : null
+                "
+              />
+            </div>
+
+            <p
+              *ngIf="dateRangeInvalid && submitted"
+              id="date-range-error"
+              class="field-error"
+              role="alert"
             >
-            <span *ngIf="nameCtrl.errors?.['minlength']"
-              >Project Name must be at least 3 characters.</span
+              End date must be on or after start date.
+            </p>
+          </fieldset>
+
+          <div class="actions">
+            <button
+              class="btn"
+              type="submit"
+              [disabled]="isSubmitting"
+              [attr.aria-disabled]="isSubmitting ? 'true' : null"
             >
-          </small>
-        </div>
+              <span *ngIf="!isSubmitting">Create project</span>
+              <span *ngIf="isSubmitting">Creating…</span>
+            </button>
 
-        <div class="task-add-page_form-group">
-          <label for="description" class="task-add-page_form-label"
-            >Description</label
-          >
-
-          <textarea
-            id="description"
-            rows="4"
-            class="task-add-page_form-control"
-            formControlName="description"
-            placeholder="Brief description of the project"
-            [attr.aria-describedby]="'description-hint'"
-          ></textarea>
-
-          <small id="description-hint" class="hint">
-            Optional. A short description helps others understand the scope.
-          </small>
-        </div>
-
-        <fieldset class="date-fieldset">
-          <legend class="date-legend">Project dates</legend>
-
-          <div class="task-add-page_form-group">
-            <label for="startDate" class="task-add-page_form-label"
-              >Start Date</label
-            >
-
-            <input
-              #startDateInput
-              id="startDate"
-              type="date"
-              class="task-add-page_form-control"
-              formControlName="startDate"
-              [attr.aria-invalid]="
-                dateRangeInvalid && (submitted || startDateCtrl.touched)
-                  ? 'true'
-                  : null
-              "
-              [attr.aria-describedby]="
-                dateRangeInvalid ? 'date-range-error' : null
-              "
-            />
+            <a class="link" routerLink="/projects/projects-list">Return</a>
           </div>
-
-          <div class="task-add-page_form-group">
-            <label for="endDate" class="task-add-page_form-label"
-              >End Date</label
-            >
-
-            <input
-              #endDateInput
-              id="endDate"
-              type="date"
-              class="task-add-page_form-control"
-              formControlName="endDate"
-              [attr.aria-invalid]="
-                dateRangeInvalid && (submitted || endDateCtrl.touched)
-                  ? 'true'
-                  : null
-              "
-              [attr.aria-describedby]="
-                dateRangeInvalid ? 'date-range-error' : null
-              "
-            />
-          </div>
-
-          <small
-            id="date-range-error"
-            class="error"
-            *ngIf="dateRangeInvalid && submitted"
-          >
-            End Date must be on or after Start Date.
-          </small>
-        </fieldset>
-
-        <button
-          class="btn task-add-page_btn"
-          type="submit"
-          [disabled]="isSubmitting"
-          [attr.aria-disabled]="isSubmitting ? 'true' : null"
-        >
-          <span *ngIf="!isSubmitting">Submit</span>
-          <span *ngIf="isSubmitting">Submitting…</span>
-        </button>
-      </form>
-    </main>
+        </form>
+      </div>
+    </section>
   `,
   styles: `
-    .task-add-page {
+    .page {
       max-width: 720px;
       margin: 0 auto;
       padding: 1rem;
     }
 
-    .task-add-page_title {
-      margin: 0 0 0.25rem 0;
-    }
+    .page-header { margin-bottom: 1rem; }
 
-    .task-add-page_subtitle {
-      margin: 0 0 1rem 0;
+    .page_title { margin: 0 0 0.25rem 0; }
+    .page_subtitle {
+      margin: 0;
       color: #666;
       font-weight: 400;
     }
 
-    .task-add-page_form-group {
-      margin-bottom: 1rem;
+    /* Skip link */
+    .skip-link {
+      position: absolute;
+      left: -999px;
+      top: auto;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+    }
+    .skip-link:focus {
+      position: static;
+      width: auto;
+      height: auto;
+      padding: 0.5rem 0.75rem;
+      display: inline-block;
+      margin-bottom: 0.75rem;
+      border: 2px solid currentColor;
+      border-radius: 0.5rem;
+      background: #fff;
+    }
+
+    .card {
+      background: var(--bg_color, #fff);
+      border-radius: 0.75rem;
+      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
+      padding: 1.5rem;
+    }
+
+    #main-content:focus {
+      outline: 3px solid currentColor;
+      outline-offset: 4px;
+      border-radius: 0.5rem;
+    }
+
+    .form {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .field {
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: 0.4rem;
     }
 
-    .task-add-page_form-label {
-      font-weight: 600;
-    }
+    .label { font-weight: 700; }
 
-    .task-add-page_form-control {
-      padding: 0.5rem 0.75rem;
+    .control {
+      padding: 0.6rem 0.75rem;
       border: 1px solid #ccc;
-      border-radius: 4px;
+      border-radius: 0.35rem;
+      font-size: 1rem;
     }
 
-    /* Strong visible focus for keyboard users */
-    .task-add-page_form-control:focus-visible {
+    .control:focus-visible,
+    .btn:focus-visible,
+    .link:focus-visible,
+    .error-summary a:focus-visible {
       outline: 3px solid currentColor;
       outline-offset: 3px;
+      border-radius: 0.35rem;
     }
 
-    .task-add-page_btn {
+    .hint {
+      margin: 0;
+      color: #555;
+      font-size: 0.95rem;
+    }
+
+    .status { margin: 0.75rem 0; }
+    .status.success { font-weight: 800; }
+    .status.error { font-weight: 800; }
+
+    .field-error {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #8a0000;
+    }
+
+    .fieldset {
+      border: 1px solid #ccc;
+      border-radius: 0.75rem;
+      padding: 0.75rem;
+      margin: 0;
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .legend {
+      font-weight: 700;
+      padding: 0 0.25rem;
+    }
+
+    .actions {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 0.25rem;
+    }
+
+    .btn {
       background: var(--medium_blue);
       color: #fff;
       border: 0;
-      padding: 0.5rem 1rem;
-      border-radius: 4px;
+      padding: 0.65rem 1.1rem;
+      border-radius: 0.35rem;
       cursor: pointer;
     }
 
-    .task-add-page_btn[aria-disabled='true'],
-    .task-add-page_btn:disabled {
+    .btn[disabled] {
       opacity: 0.7;
       cursor: not-allowed;
     }
 
-    .hint {
-      color: #555;
-      margin: 0;
-      font-size: 0.875rem;
+    .link {
+      text-decoration: none;
+      color: var(--medium_blue);
     }
-
-    .success {
-      color: #1abc9c;
-      margin: 0.75rem 0;
-    }
-
-    .error {
-      color: #e74c3c;
-      margin: 0.25rem 0 0 0;
-      font-size: 0.875rem;
-    }
-
-    .status {
-      min-height: 1.25rem;
-    }
-
-    .date-fieldset {
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      padding: 0.75rem;
-      margin: 0 0 1rem 0;
-    }
-
-    .date-legend {
-      font-weight: 600;
-      padding: 0 0.25rem;
-    }
+    .link:hover { text-decoration: underline; }
 
     .error-summary {
-      border: 2px solid #e74c3c;
-      border-radius: 6px;
+      border: 2px solid #8a0000;
+      border-radius: 0.75rem;
       padding: 0.75rem;
-      margin: 0 0 1rem 0;
       background: #fff;
     }
 
@@ -299,20 +365,25 @@ import { ProjectService } from '../projects.service';
       text-decoration: underline;
     }
 
-    .error-summary a:focus-visible {
-      outline: 3px solid currentColor;
-      outline-offset: 3px;
-      border-radius: 4px;
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        scroll-behavior: auto !important;
+        transition: none !important;
+        animation: none !important;
+      }
     }
   `,
 })
-export class AddProjectsComponent {
+export class AddProjectsComponent implements OnDestroy {
   @ViewChild('errorSummary') errorSummaryEl?: ElementRef<HTMLElement>;
+  @ViewChild('mainContent', { static: true })
+  mainContentRef!: ElementRef<HTMLElement>;
 
   submitted = false;
   isSubmitting = false;
 
-  successMessage = '';
+  statusMessage = '';
+  statusKind: 'info' | 'success' | 'error' = 'info';
   errorMessage = '';
 
   showErrorSummary = false;
@@ -326,6 +397,8 @@ export class AddProjectsComponent {
     },
     { validators: [AddProjectsComponent.dateRangeValidator] }
   );
+
+  private readonly destroy$ = new Subject<void>();
 
   constructor(
     private readonly fb: FormBuilder,
@@ -355,7 +428,6 @@ export class AddProjectsComponent {
 
     if (!start || !end) return null;
 
-    // type="date" returns "YYYY-MM-DD" (local date). Compare as dates safely.
     const startDate = new Date(`${start}T00:00:00`);
     const endDate = new Date(`${end}T00:00:00`);
 
@@ -365,6 +437,11 @@ export class AddProjectsComponent {
     return endDate >= startDate ? null : { dateRangeInvalid: true };
   }
 
+  isFieldInvalid(controlName: 'name'): boolean {
+    const c = this.projectForm.get(controlName);
+    return !!c && c.invalid && (c.touched || this.submitted);
+  }
+
   focusField(event: Event, el: HTMLElement): void {
     event.preventDefault();
     el.focus();
@@ -372,26 +449,26 @@ export class AddProjectsComponent {
 
   private showAndFocusErrorSummary(): void {
     this.showErrorSummary = true;
-    queueMicrotask(() => {
-      this.errorSummaryEl?.nativeElement?.focus();
-    });
+    queueMicrotask(() => this.errorSummaryEl?.nativeElement?.focus());
   }
 
   onSubmit(): void {
     this.submitted = true;
-    this.successMessage = '';
     this.errorMessage = '';
+    this.statusMessage = '';
+    this.statusKind = 'info';
+
+    this.projectForm.markAllAsTouched();
 
     if (this.projectForm.invalid) {
-      this.projectForm.markAllAsTouched();
       this.showAndFocusErrorSummary();
       return;
     }
 
     this.isSubmitting = true;
     this.showErrorSummary = false;
+    this.setStatus('Creating project…', 'info');
 
-    // Use start/end as ISO only if they exist; otherwise omit (or send null)
     const startRaw = this.startDateCtrl.value as string | null;
     const endRaw = this.endDateCtrl.value as string | null;
 
@@ -403,27 +480,45 @@ export class AddProjectsComponent {
       : null;
 
     const newProject: AddProjectDTO = {
-      name: this.nameCtrl.value,
-      description: this.projectForm.controls['description'].value,
+      name: String(this.nameCtrl.value).trim(),
+      description: this.projectForm.get('description')?.value ?? null,
       startDate: startDateIso,
       endDate: endDateIso,
-      // Always set dateCreated to "now" (previous code tried to read an unset control)
       dateCreated: new Date().toISOString(),
     };
 
-    this.projectService.addProject(newProject).subscribe({
-      next: () => {
-        this.successMessage = 'Project created successfully!';
-        this.isSubmitting = false;
+    this.projectService
+      .addProject(newProject)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.isSubmitting = false;
+          this.setStatus('Project created successfully.', 'success');
+          queueMicrotask(() =>
+            this.router.navigate(['/projects/projects-list'])
+          );
+        },
+        error: () => {
+          this.isSubmitting = false;
+          this.setError('Error creating project. Please try again.');
+          this.showAndFocusErrorSummary();
+          queueMicrotask(() => this.mainContentRef?.nativeElement.focus());
+        },
+      });
+  }
 
-        // Navigation will typically change the page; keep message for screen readers briefly if needed.
-        this.router.navigate(['/projects/projects-list']);
-      },
-      error: () => {
-        this.errorMessage = 'Error creating project. Please try again.';
-        this.isSubmitting = false;
-        this.showAndFocusErrorSummary();
-      },
-    });
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private setStatus(message: string, kind: 'info' | 'success' | 'error'): void {
+    this.statusMessage = message;
+    this.statusKind = kind;
+  }
+
+  private setError(message: string): void {
+    this.errorMessage = message;
+    this.setStatus(message, 'error');
   }
 }

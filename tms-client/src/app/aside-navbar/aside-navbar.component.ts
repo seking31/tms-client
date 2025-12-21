@@ -21,7 +21,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
             [attr.aria-current]="rlaTasksAll.isActive ? 'page' : null"
             #rlaTasksAll="routerLinkActive"
           >
-            View All Tasks
+            All Tasks
           </a>
         </li>
 
