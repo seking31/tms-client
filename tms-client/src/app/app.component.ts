@@ -34,71 +34,45 @@ import { NgOptimizedImage } from '@angular/common';
 
           <div class="navbar_links">
             <ul class="navbar_list">
+              <!-- Home -->
               <li class="nav_item">
                 <a class="navbar_link" routerLink="/">Home</a>
               </li>
-              <li class="nav_item">
-                <a class="navbar_link" routerLink="/task-list">All Tasks</a>
+
+              <!-- Tasks Dropdown -->
+              <li class="nav_item dropdown">
+                <span class="navbar_link dropdown_toggle">Tasks ▾</span>
+                <ul class="dropdown_menu">
+                  <li><a routerLink="/task-list">All Tasks</a></li>
+                  <li><a routerLink="/tasks/add">Add Task</a></li>
+                  <li><a routerLink="/tasks/read">Read Task</a></li>
+                  <li><a routerLink="/tasks/search">Search Tasks</a></li>
+                  <li><a routerLink="/tasks/delete">Delete Task</a></li>
+                </ul>
               </li>
-              <li class="nav_item">
-                <a class="navbar_link" routerLink="/tasks/delete"
-                  >Delete Task</a
-                >
-              </li>
-              <li class="nav_item">
-                <a class="navbar_link" routerLink="/tasks/search"
-                  >Search Tasks</a
-                >
-              </li>
-              <li class="nav_item">
-                <a class="navbar_link" routerLink="/tasks/add">Add Task</a>
-              </li>
-              <li class="nav_item">
-                <a class="navbar_link" routerLink="tasks/read">Read Task</a>
-              </li>
-              <li class="nav_item">
-                <a class="navbar_link" routerLink="/projects/projects-list"
-                  >All Projects</a
-                >
-              </li>
-              <li class="nav_item">
-                <a class="navbar_link" routerLink="/projects/project-update"
-                  >Update Project</a
-                >
-              </li>
-              <li class="nav_item">
-                <a class="navbar_link" routerLink="/projects/projects-delete"
-                  >Delete Project</a
-                >
-              </li>
-              <li class="nav_item">
-                <a class="navbar_link" routerLink="/projects/projects-find"
-                  >Search Project</a
-                >
-              </li>
-              <li class="nav_item">
-                <a class="navbar_link" routerLink="/projects/projects-add"
-                  >Add Project</a
-                >
+
+              <!-- Projects Dropdown -->
+              <li class="nav_item dropdown">
+                <span class="navbar_link dropdown_toggle">Projects ▾</span>
+                <ul class="dropdown_menu">
+                  <li>
+                    <a routerLink="/projects/projects-list">All Projects</a>
+                  </li>
+                  <li>
+                    <a routerLink="/projects/projects-add">Add Project</a>
+                  </li>
+                  <li>
+                    <a routerLink="/projects/project-update">Update Project</a>
+                  </li>
+                  <li>
+                    <a routerLink="/projects/projects-find">Search Project</a>
+                  </li>
+                  <li>
+                    <a routerLink="/projects/projects-delete">Delete Project</a>
+                  </li>
+                </ul>
               </li>
             </ul>
-            <button class="btn login_btn">
-              <svg
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2ZM7.99 9a1 1 0 0 1 1-1H9a1 1 0 0 1 0 2h-.01a1 1 0 0 1-1-1ZM14 9a1 1 0 0 1 1-1h.01a1 1 0 1 1 0 2H15a1 1 0 0 1-1-1Zm-5.506 7.216A5.5 5.5 0 0 1 6.6 13h10.81a5.5 5.5 0 0 1-8.916 3.216Z"
-                  clip-rule="evenodd"
-                />
-              </svg>
-              <span class="login_label">Account</span>
-            </button>
           </div>
         </nav>
       </header>
@@ -240,6 +214,52 @@ import { NgOptimizedImage } from '@angular/common';
         padding: 0.75rem;
       }
     }
+
+
+    /* ---------- Dropdown ---------- */
+.dropdown {
+  position: relative;
+}
+
+.dropdown_toggle {
+  cursor: pointer;
+  user-select: none;
+}
+
+.dropdown_menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: var(--bg_color);
+  border: 1px solid #ddd;
+  border-radius: 0.25rem;
+  padding: 0.5rem 0;
+  min-width: 180px;
+  display: none;
+  z-index: 1000;
+}
+
+.dropdown_menu li {
+  list-style: none;
+}
+
+.dropdown_menu a {
+  display: block;
+  padding: 0.4rem 1rem;
+  text-decoration: none;
+  color: var(--medium_blue);
+  font-size: 0.9rem;
+}
+
+.dropdown_menu a:hover {
+  background-color: #f3f4f6;
+  color: var(--dark_blue);
+}
+
+.dropdown:hover .dropdown_menu {
+  display: block;
+}
+
   `,
 })
 export class AppComponent {
