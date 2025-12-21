@@ -107,7 +107,6 @@ import { NgOptimizedImage } from '@angular/common';
 
     .nav {
       display: flex;
-      justify-content: space-between;
       align-items: center;
       gap: 1rem;
       flex-wrap: wrap; /* help on very narrow screens */
