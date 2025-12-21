@@ -67,7 +67,7 @@ import { TaskService } from '../tasks.service';
           </option>
 
           <option *ngFor="let t of tasksList" [value]="t._id">
-            {{ t._id }}
+            {{ t.title || 'Untitled task' }} (ID: {{ t._id }})
           </option>
         </select>
 

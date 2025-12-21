@@ -180,7 +180,7 @@ import { ProjectService } from '../../projects/projects.service';
             >
               <option value="" disabled>Select status</option>
               <option value="Pending">Pending</option>
-              <option value="In Progress">In progress</option>
+              <option value="In Progress">In Progress</option>
               <option value="Completed">Completed</option>
             </select>
 
