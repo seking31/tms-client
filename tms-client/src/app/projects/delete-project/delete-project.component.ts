@@ -68,7 +68,7 @@ import { Subject, finalize, takeUntil } from 'rxjs';
           </option>
 
           <option *ngFor="let p of projectsList" [value]="p._id">
-            {{ p._id }}
+            {{ p.name || 'Untitled Project' }} (ID: {{ p._id }})
           </option>
         </select>
 
