@@ -356,6 +356,7 @@ type MenuKey = 'tasks' | 'projects' | null;
 
     .dropdown_menu--open {
       display: block;
+      list-style: none;
     }
 
     .dropdown_link {

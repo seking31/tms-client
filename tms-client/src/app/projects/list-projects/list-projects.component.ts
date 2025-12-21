@@ -20,20 +20,19 @@ import { ProjectService } from '../projects.service';
     <main class="project-container" aria-labelledby="page-title">
       <h1 id="page-title" class="page-title">All Projects</h1>
 
-      <!-- Status updates (announced) -->
+      <!-- Status updates (polite): loading + success ONLY -->
       <div class="status" role="status" aria-live="polite" aria-atomic="true">
         <p *ngIf="loading" class="status-text">Loading projects…</p>
 
         <p
-          *ngIf="!loading && serverMessage"
-          class="status-text"
-          [ngClass]="serverMessageType"
+          *ngIf="!loading && serverMessageType === 'success' && serverMessage"
+          class="status-text success"
         >
           {{ serverMessage }}
         </p>
       </div>
 
-      <!-- Errors (assertive + focusable) -->
+      <!-- Errors (assertive + focusable): error ONLY -->
       <div
         *ngIf="!loading && serverMessageType === 'error' && serverMessage"
         #errorEl
@@ -55,7 +54,10 @@ import { ProjectService } from '../projects.service';
           role="list"
         >
           <li *ngFor="let project of projects" class="project-item">
-            <article class="project-card">
+            <article
+              class="project-card"
+              [attr.aria-label]="'Project ' + (project.name || '')"
+            >
               <header class="project-card__header">
                 <h3 class="project-card__title">{{ project.name }}</h3>
               </header>
@@ -81,12 +83,6 @@ import { ProjectService } from '../projects.service';
                   <dd>{{ project.projectId }}</dd>
                 </div>
               </dl>
-
-              <!-- Optional: add links/actions here if you have routes
-              <footer class="project-card__actions">
-                <a class="link" [routerLink]="['/projects', project.projectId]">View</a>
-              </footer>
-              -->
             </article>
           </li>
         </ul>
@@ -133,11 +129,13 @@ import { ProjectService } from '../projects.service';
 
       .success {
         color: #1b7f3a;
+        font-weight: 700;
       }
 
       .error {
         color: #b00020;
         margin-top: 0.5rem;
+        font-weight: 800;
       }
 
       .project-list {
@@ -237,13 +235,16 @@ export class ListProjectsComponent implements OnInit, OnDestroy {
         },
         error: (err: any) => {
           this.projects = [];
-          this.serverMessage = `Error retrieving projects. ${
-            err?.message ?? ''
-          }`.trim();
+          const msg = `${err?.message ?? ''}`.trim();
+
+          this.serverMessage = `Error retrieving projects.${
+            msg ? ' ' + msg : ''
+          }`;
           this.serverMessageType = 'error';
+
           console.error('Error occurred while retrieving projects:', err);
 
-          // Move focus to the error so SR + keyboard users notice it immediately
+          // Move focus after view updates so the element exists
           queueMicrotask(() => this.errorEl?.nativeElement?.focus());
         },
       });

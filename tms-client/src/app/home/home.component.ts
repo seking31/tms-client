@@ -252,7 +252,7 @@ import { switchMap, takeUntil } from 'rxjs/operators';
       padding: 0.6rem 0.9rem;
       border-radius: 8px;
       text-decoration: none;
-      border: 2px solid transparent;
+      border: 2px solid black;
       line-height: 1;
       cursor: pointer;
     }
