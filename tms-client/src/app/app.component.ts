@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { NgOptimizedImage } from '@angular/common';
+
+type MenuKey = 'tasks' | 'projects' | null;
 
 @Component({
   selector: 'app-root',
@@ -8,9 +10,13 @@ import { NgOptimizedImage } from '@angular/common';
   imports: [RouterOutlet, RouterLink, NgOptimizedImage],
   template: `
     <div class="app_container">
-      <header class="header">
-        <nav class="nav">
-          <div class="logo">
+      <!-- Skip link for keyboard users -->
+      <a class="skip-link" href="#main-content">Skip to main content</a>
+
+      <header class="header" role="banner">
+        <nav class="nav" aria-label="Primary">
+          <div class="logo" aria-label="Task Management System home">
+            <!-- Decorative icon -->
             <svg
               aria-hidden="true"
               xmlns="http://www.w3.org/2000/svg"
@@ -18,6 +24,7 @@ import { NgOptimizedImage } from '@angular/common';
               height="34"
               fill="currentColor"
               viewBox="0 0 24 24"
+              focusable="false"
             >
               <path
                 d="M9 7V2.221a2 2 0 0 0-.5.365L4.586 6.5a2 2 0 0 0-.365.5H9Z"
@@ -29,46 +36,163 @@ import { NgOptimizedImage } from '@angular/common';
               />
             </svg>
 
-            <p>Task Management System</p>
+            <p class="logo_text">Task Management System</p>
           </div>
 
           <div class="navbar_links">
             <ul class="navbar_list">
-              <!-- Home -->
               <li class="nav_item">
                 <a class="navbar_link" routerLink="/">Home</a>
               </li>
 
-              <!-- Tasks Dropdown -->
+              <!-- Tasks menu (keyboard + screen reader accessible) -->
               <li class="nav_item dropdown">
-                <span class="navbar_link dropdown_toggle">Tasks ▾</span>
-                <ul class="dropdown_menu">
-                  <li><a routerLink="/task-list">All Tasks</a></li>
-                  <li><a routerLink="/tasks/add">Add Task</a></li>
-                  <li><a routerLink="/tasks/read">Read Task</a></li>
-                  <li><a routerLink="/tasks/search">Search Tasks</a></li>
-                  <li><a routerLink="/tasks/delete">Delete Task</a></li>
+                <button
+                  type="button"
+                  class="navbar_link dropdown_toggle"
+                  [class.dropdown_toggle--open]="openMenu === 'tasks'"
+                  (click)="toggleMenu('tasks')"
+                  (keydown)="onMenuKeydown($event, 'tasks')"
+                  [attr.aria-expanded]="openMenu === 'tasks'"
+                  aria-haspopup="true"
+                  aria-controls="tasks-menu"
+                >
+                  Tasks
+                  <span aria-hidden="true">▾</span>
+                </button>
+
+                <ul
+                  id="tasks-menu"
+                  class="dropdown_menu"
+                  role="menu"
+                  [class.dropdown_menu--open]="openMenu === 'tasks'"
+                  (keydown)="onMenuListKeydown($event)"
+                >
+                  <li role="none">
+                    <a
+                      role="menuitem"
+                      class="dropdown_link"
+                      routerLink="/task-list"
+                      (click)="closeMenus()"
+                    >
+                      All tasks
+                    </a>
+                  </li>
+                  <li role="none">
+                    <a
+                      role="menuitem"
+                      class="dropdown_link"
+                      routerLink="/tasks/add"
+                      (click)="closeMenus()"
+                    >
+                      Add task
+                    </a>
+                  </li>
+                  <li role="none">
+                    <a
+                      role="menuitem"
+                      class="dropdown_link"
+                      routerLink="/tasks/read"
+                      (click)="closeMenus()"
+                    >
+                      Read task
+                    </a>
+                  </li>
+                  <li role="none">
+                    <a
+                      role="menuitem"
+                      class="dropdown_link"
+                      routerLink="/tasks/search"
+                      (click)="closeMenus()"
+                    >
+                      Search tasks
+                    </a>
+                  </li>
+                  <li role="none">
+                    <a
+                      role="menuitem"
+                      class="dropdown_link"
+                      routerLink="/tasks/delete"
+                      (click)="closeMenus()"
+                    >
+                      Delete task
+                    </a>
+                  </li>
                 </ul>
               </li>
 
-              <!-- Projects Dropdown -->
+              <!-- Projects menu -->
               <li class="nav_item dropdown">
-                <span class="navbar_link dropdown_toggle">Projects ▾</span>
-                <ul class="dropdown_menu">
-                  <li>
-                    <a routerLink="/projects/projects-list">All Projects</a>
+                <button
+                  type="button"
+                  class="navbar_link dropdown_toggle"
+                  [class.dropdown_toggle--open]="openMenu === 'projects'"
+                  (click)="toggleMenu('projects')"
+                  (keydown)="onMenuKeydown($event, 'projects')"
+                  [attr.aria-expanded]="openMenu === 'projects'"
+                  aria-haspopup="true"
+                  aria-controls="projects-menu"
+                >
+                  Projects
+                  <span aria-hidden="true">▾</span>
+                </button>
+
+                <ul
+                  id="projects-menu"
+                  class="dropdown_menu"
+                  role="menu"
+                  [class.dropdown_menu--open]="openMenu === 'projects'"
+                  (keydown)="onMenuListKeydown($event)"
+                >
+                  <li role="none">
+                    <a
+                      role="menuitem"
+                      class="dropdown_link"
+                      routerLink="/projects/projects-list"
+                      (click)="closeMenus()"
+                    >
+                      All projects
+                    </a>
                   </li>
-                  <li>
-                    <a routerLink="/projects/projects-add">Add Project</a>
+                  <li role="none">
+                    <a
+                      role="menuitem"
+                      class="dropdown_link"
+                      routerLink="/projects/projects-add"
+                      (click)="closeMenus()"
+                    >
+                      Add project
+                    </a>
                   </li>
-                  <li>
-                    <a routerLink="/projects/project-update">Update Project</a>
+                  <li role="none">
+                    <a
+                      role="menuitem"
+                      class="dropdown_link"
+                      routerLink="/projects/project-update"
+                      (click)="closeMenus()"
+                    >
+                      Update project
+                    </a>
                   </li>
-                  <li>
-                    <a routerLink="/projects/projects-find">Search Project</a>
+                  <li role="none">
+                    <a
+                      role="menuitem"
+                      class="dropdown_link"
+                      routerLink="/projects/projects-find"
+                      (click)="closeMenus()"
+                    >
+                      Search project
+                    </a>
                   </li>
-                  <li>
-                    <a routerLink="/projects/projects-delete">Delete Project</a>
+                  <li role="none">
+                    <a
+                      role="menuitem"
+                      class="dropdown_link"
+                      routerLink="/projects/projects-delete"
+                      (click)="closeMenus()"
+                    >
+                      Delete project
+                    </a>
                   </li>
                 </ul>
               </li>
@@ -77,11 +201,11 @@ import { NgOptimizedImage } from '@angular/common';
         </nav>
       </header>
 
-      <main class="main">
+      <main id="main-content" class="main" role="main" tabindex="-1">
         <router-outlet></router-outlet>
       </main>
 
-      <footer class="footer">
+      <footer class="footer" role="contentinfo">
         <p class="footer_text">&copy;2025 MEAN Stack - Group Project</p>
       </footer>
     </div>
@@ -91,6 +215,27 @@ import { NgOptimizedImage } from '@angular/common';
       display: flex;
       flex-direction: column;
       min-height: 100vh;
+    }
+
+    /* Skip link */
+    .skip-link {
+      position: absolute;
+      left: -999px;
+      top: auto;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+    }
+    .skip-link:focus {
+      position: static;
+      width: auto;
+      height: auto;
+      padding: 0.5rem 0.75rem;
+      display: inline-block;
+      margin: 0.5rem 0.75rem;
+      border: 2px solid currentColor;
+      border-radius: 0.5rem;
+      background: var(--bg_color, #fff);
     }
 
     .header,
@@ -105,11 +250,17 @@ import { NgOptimizedImage } from '@angular/common';
       padding: 1rem;
     }
 
+    .main:focus-visible {
+      outline: 3px solid currentColor;
+      outline-offset: 4px;
+      border-radius: 0.5rem;
+    }
+
     .nav {
       display: flex;
       align-items: center;
       gap: 1rem;
-      flex-wrap: wrap; /* help on very narrow screens */
+      flex-wrap: wrap;
     }
 
     .logo {
@@ -117,8 +268,12 @@ import { NgOptimizedImage } from '@angular/common';
       flex-direction: row;
       align-items: center;
       gap: 0.5rem;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--dark_blue);
+    }
+
+    .logo_text {
+      margin: 0;
     }
 
     .logo svg {
@@ -141,39 +296,86 @@ import { NgOptimizedImage } from '@angular/common';
       margin: 0;
       flex-wrap: wrap;
       justify-content: flex-end;
+      align-items: center;
     }
 
+    /* Use same class for links + buttons for consistent styling */
     .navbar_link {
+      background: transparent;
+      border: none;
+      padding: 0.25rem 0.2rem;
       text-decoration: none;
       color: var(--medium_blue);
-      transition: color 0.3s ease-in-out;
       font-size: 0.95rem;
+      cursor: pointer;
+      line-height: 1.2;
     }
 
     .navbar_link:hover {
       color: var(--dark_blue);
     }
 
-    .login_btn {
-      background-color: var(--dark_blue);
-      color: var(--bg_color);
-      border: none;
-      padding: 0.4rem 0.8rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
-      border-radius: 0.25rem;
-      cursor: pointer;
-      font-size: 0.9rem;
-    }
-
-    .login_btn svg {
-      color: var(--bg_color);
+    .navbar_link:focus-visible {
+      outline: 3px solid currentColor;
+      outline-offset: 3px;
+      border-radius: 0.35rem;
     }
 
     .footer_text {
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       margin: 0.25rem 0;
+    }
+
+    /* ---------- Dropdown ---------- */
+    .dropdown {
+      position: relative;
+    }
+
+    .dropdown_toggle {
+      user-select: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    /* Menu defaults: hidden but still accessible when opened via class */
+    .dropdown_menu {
+      position: absolute;
+      top: calc(100% + 0.35rem);
+      left: 0;
+      background: var(--bg_color, #ffffff);
+      border: 1px solid #ddd;
+      border-radius: 0.5rem;
+      padding: 0.35rem 0;
+      min-width: 200px;
+      display: none;
+      z-index: 1000;
+      text-align: left;
+      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
+    }
+
+    .dropdown_menu--open {
+      display: block;
+    }
+
+    .dropdown_link {
+      display: block;
+      padding: 0.5rem 1rem;
+      text-decoration: none;
+      color: var(--medium_blue);
+      font-size: 0.95rem;
+      white-space: nowrap;
+    }
+
+    .dropdown_link:hover {
+      background-color: #f3f4f6;
+      color: var(--dark_blue);
+    }
+
+    .dropdown_link:focus-visible {
+      outline: 3px solid currentColor;
+      outline-offset: -3px;
+      border-radius: 0.35rem;
     }
 
     /* ---------- Mobile styles ---------- */
@@ -200,67 +402,139 @@ import { NgOptimizedImage } from '@angular/common';
         gap: 0.5rem;
       }
 
-      .navbar_link {
-        font-size: 0.95rem;
+      /* Put dropdown menus inline on mobile to avoid off-screen popups */
+      .dropdown_menu {
+        position: static;
+        min-width: unset;
+        width: 100%;
+        box-shadow: none;
+        border-radius: 0.5rem;
       }
 
-      .login_btn {
-        align-self: stretch;
-        justify-content: center;
-      }
-
-      .main {
-        padding: 0.75rem;
+      .dropdown_link {
+        padding-left: 0.75rem;
       }
     }
 
-
-    /* ---------- Dropdown ---------- */
-.dropdown {
-  position: relative;
-}
-
-.dropdown_toggle {
-  cursor: pointer;
-  user-select: none;
-}
-
-.dropdown_menu {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  background: var(--bg_color);
-  border: 1px solid #ddd;
-  border-radius: 0.25rem;
-  padding: 0.5rem 0;
-  min-width: 180px;
-  display: none;
-  z-index: 1000;
-}
-
-.dropdown_menu li {
-  list-style: none;
-}
-
-.dropdown_menu a {
-  display: block;
-  padding: 0.4rem 1rem;
-  text-decoration: none;
-  color: var(--medium_blue);
-  font-size: 0.9rem;
-}
-
-.dropdown_menu a:hover {
-  background-color: #f3f4f6;
-  color: var(--dark_blue);
-}
-
-.dropdown:hover .dropdown_menu {
-  display: block;
-}
-
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        scroll-behavior: auto !important;
+        transition: none !important;
+        animation: none !important;
+      }
+    }
   `,
 })
 export class AppComponent {
   title = 'tms-client';
+
+  openMenu: MenuKey = null;
+
+  toggleMenu(menu: Exclude<MenuKey, null>): void {
+    this.openMenu = this.openMenu === menu ? null : menu;
+  }
+
+  closeMenus(): void {
+    this.openMenu = null;
+  }
+
+  // Close on Escape globally
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.closeMenus();
+  }
+
+  // Close when clicking outside
+  @HostListener('document:click', ['$event'])
+  onDocClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement | null;
+    if (!target) return;
+
+    // If click is inside a dropdown, ignore
+    const insideDropdown = !!target.closest('.dropdown');
+    if (!insideDropdown) this.closeMenus();
+  }
+
+  onMenuKeydown(event: KeyboardEvent, menu: Exclude<MenuKey, null>): void {
+    const key = event.key;
+
+    if (key === 'Enter' || key === ' ') {
+      event.preventDefault();
+      this.toggleMenu(menu);
+
+      // After opening, move focus to first menu item for keyboard users
+      queueMicrotask(() => {
+        if (this.openMenu !== menu) return;
+        const menuEl = document.getElementById(
+          menu === 'tasks' ? 'tasks-menu' : 'projects-menu'
+        );
+        const firstItem =
+          menuEl?.querySelector<HTMLElement>('a[role="menuitem"]');
+        firstItem?.focus();
+      });
+      return;
+    }
+
+    if (key === 'ArrowDown') {
+      event.preventDefault();
+      this.openMenu = menu;
+      queueMicrotask(() => {
+        const menuEl = document.getElementById(
+          menu === 'tasks' ? 'tasks-menu' : 'projects-menu'
+        );
+        const firstItem =
+          menuEl?.querySelector<HTMLElement>('a[role="menuitem"]');
+        firstItem?.focus();
+      });
+      return;
+    }
+
+    if (key === 'Escape') {
+      event.preventDefault();
+      this.closeMenus();
+    }
+  }
+
+  onMenuListKeydown(event: KeyboardEvent): void {
+    const key = event.key;
+
+    if (key === 'Escape') {
+      event.preventDefault();
+      this.closeMenus();
+      // Return focus to the corresponding toggle if possible
+      queueMicrotask(() => {
+        const toggles = Array.from(
+          document.querySelectorAll<HTMLButtonElement>('.dropdown_toggle')
+        );
+        // Focus the first open toggle; if none, focus first toggle
+        const target =
+          toggles.find((t) => t.getAttribute('aria-expanded') === 'true') ??
+          toggles[0];
+        target?.focus();
+      });
+      return;
+    }
+
+    // Simple roving focus with ArrowUp/ArrowDown inside open menu
+    if (key === 'ArrowDown' || key === 'ArrowUp') {
+      event.preventDefault();
+
+      const menuEl = (event.target as HTMLElement).closest<HTMLElement>(
+        '[role="menu"]'
+      );
+      if (!menuEl) return;
+
+      const items = Array.from(
+        menuEl.querySelectorAll<HTMLElement>('a[role="menuitem"]')
+      );
+      const currentIndex = items.findIndex(
+        (el) => el === document.activeElement
+      );
+      if (currentIndex === -1) return;
+
+      const delta = key === 'ArrowDown' ? 1 : -1;
+      const nextIndex = (currentIndex + delta + items.length) % items.length;
+      items[nextIndex]?.focus();
+    }
+  }
 }
