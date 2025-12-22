@@ -44,10 +44,6 @@ p {
   color: var(--dark_blue);
 }
 
-/* Default padding for sections */
-section {
-  padding: 5rem 8rem;
-}
 
 /* Define global button style */
 .btn {

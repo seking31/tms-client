@@ -18,79 +18,101 @@ import { ProjectService } from '../projects.service';
   imports: [CommonModule, RouterLink],
   template: `
     <main class="project-container" aria-labelledby="page-title">
-      <h1 id="page-title" class="page-title">All Projects</h1>
+      <a class="skip-link" href="#project-list">Skip to project list</a>
+
+      <header class="page-header">
+        <h1 id="page-title" class="page-title">All Projects</h1>
+      </header>
 
       <!-- Status updates (polite): loading + success ONLY -->
-      <div class="status" role="status" aria-live="polite" aria-atomic="true">
-        <p *ngIf="loading" class="status-text">Loading projects…</p>
+      <p
+        *ngIf="loading"
+        class="status"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        Loading projects…
+      </p>
 
-        <p
-          *ngIf="!loading && serverMessageType === 'success' && serverMessage"
-          class="status-text success"
-        >
-          {{ serverMessage }}
-        </p>
-      </div>
+      <p
+        *ngIf="!loading && serverMessageType === 'success' && serverMessage"
+        class="status success"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        {{ serverMessage }}
+      </p>
 
       <!-- Errors (assertive + focusable): error ONLY -->
-      <div
+      <p
         *ngIf="!loading && serverMessageType === 'error' && serverMessage"
         #errorEl
-        class="error"
+        class="status error"
         role="alert"
         aria-live="assertive"
         aria-atomic="true"
         tabindex="-1"
       >
         {{ serverMessage }}
-      </div>
+      </p>
 
-      <section *ngIf="!loading" aria-labelledby="results-title">
-        <h2 id="results-title" class="sr-only">Project results</h2>
+      <!-- Results -->
+      <div class="content" tabindex="-1" #content>
+        <section *ngIf="!loading" aria-labelledby="results-title">
+          <h2 id="results-title" class="sr-only">Project results</h2>
 
-        <ul
-          *ngIf="projects.length > 0; else noProjects"
-          class="project-list"
-          role="list"
-        >
-          <li *ngFor="let project of projects" class="project-item">
-            <article
-              class="project-card"
-              [attr.aria-label]="'Project ' + (project.name || '')"
+          <ul
+            id="project-list"
+            *ngIf="projects.length > 0; else noProjects"
+            class="project-list"
+            aria-label="Project results"
+          >
+            <li *ngFor="let project of projects" class="project-item">
+              <article
+                class="project-card"
+                [attr.aria-label]="'Project ' + (project.name || '')"
+              >
+                <h2 class="project-title">{{ project.name }}</h2>
+
+                <dl class="project-meta">
+                  <div *ngIf="project.description" class="meta-row">
+                    <dt>Description</dt>
+                    <dd>{{ project.description }}</dd>
+                  </div>
+
+                  <div *ngIf="project.dateCreated" class="meta-row">
+                    <dt>Created</dt>
+                    <dd>{{ project.dateCreated }}</dd>
+                  </div>
+
+                  <div *ngIf="project.dateModified" class="meta-row">
+                    <dt>Modified</dt>
+                    <dd>{{ project.dateModified }}</dd>
+                  </div>
+
+                  <div *ngIf="project.projectId" class="meta-row">
+                    <dt>Project ID</dt>
+                    <dd>{{ project.projectId }}</dd>
+                  </div>
+                </dl>
+              </article>
+            </li>
+          </ul>
+
+          <ng-template #noProjects>
+            <p
+              class="status"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
             >
-              <header class="project-card__header">
-                <h3 class="project-card__title">{{ project.name }}</h3>
-              </header>
-
-              <dl class="project-card__meta">
-                <div *ngIf="project.description" class="meta-row">
-                  <dt>Description</dt>
-                  <dd>{{ project.description }}</dd>
-                </div>
-
-                <div *ngIf="project.dateCreated" class="meta-row">
-                  <dt>Created</dt>
-                  <dd>{{ project.dateCreated }}</dd>
-                </div>
-
-                <div *ngIf="project.dateModified" class="meta-row">
-                  <dt>Modified</dt>
-                  <dd>{{ project.dateModified }}</dd>
-                </div>
-
-                <div *ngIf="project.projectId" class="meta-row">
-                  <dt>Project ID</dt>
-                  <dd>{{ project.projectId }}</dd>
-                </div>
-              </dl>
-            </article>
-          </li>
-        </ul>
-
-        <ng-template #noProjects>
-          <p class="empty">No projects found.</p>
-        </ng-template>
-      </section>
+              No projects found.
+            </p>
+          </ng-template>
+        </section>
+      </div>
     </main>
   `,
   styles: [
@@ -110,40 +132,61 @@ import { ProjectService } from '../projects.service';
 
       .project-container {
         padding: 1rem;
-        max-width: 720px;
-        margin: auto;
+        max-width: 820px;
+        margin: 0 auto;
       }
 
-      .page-title {
-        margin: 0 0 0.75rem 0;
+      /* Skip link (match tasks) */
+      .skip-link {
+        position: absolute;
+        left: -999px;
+        top: auto;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+      }
+      .skip-link:focus {
+        position: static;
+        width: auto;
+        height: auto;
+        padding: 0.5rem 0.75rem;
+        display: inline-block;
+        margin-bottom: 0.75rem;
+        border: 2px solid currentColor;
+        border-radius: 0.5rem;
       }
 
-      .status {
-        min-height: 1.25rem;
+      .page-header {
         margin-bottom: 0.75rem;
       }
 
-      .status-text {
-        margin: 0.25rem 0;
+      .page-title {
+        margin: 0;
       }
 
+      .content:focus {
+        outline: 3px solid currentColor;
+        outline-offset: 4px;
+        border-radius: 0.5rem;
+      }
+
+      .status {
+        margin: 0.75rem 0;
+      }
+
+      /* Don’t rely on color alone */
       .success {
-        color: #1b7f3a;
-        font-weight: 700;
+        font-weight: 800;
       }
-
       .error {
-        color: #b00020;
-        margin-top: 0.5rem;
         font-weight: 800;
       }
 
       .project-list {
         list-style: none;
         padding: 0;
-        margin: 0.5rem 0 0 0;
-        display: flex;
-        flex-direction: column;
+        margin: 0.75rem 0 0;
+        display: grid;
         gap: 0.75rem;
       }
 
@@ -152,42 +195,41 @@ import { ProjectService } from '../projects.service';
       }
 
       .project-card {
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        padding: 0.9rem;
-        background: #fff;
+        border: 1px solid #d0d7de;
+        border-radius: 0.75rem;
+        padding: 1rem;
       }
 
-      .project-card__header {
-        margin-bottom: 0.5rem;
+      .project-title {
+        margin: 0 0 0.5rem;
+        font-size: 1.1rem;
       }
 
-      .project-card__title {
-        margin: 0;
-        font-size: 1.05rem;
-      }
-
-      .project-card__meta {
+      .project-meta {
         margin: 0;
       }
 
       .meta-row {
         display: grid;
         grid-template-columns: 120px 1fr;
-        gap: 0.5rem;
-        padding: 0.25rem 0;
+        gap: 0.75rem;
+        padding: 0.2rem 0;
       }
 
       dt {
-        font-weight: 600;
+        font-weight: 700;
       }
 
       dd {
         margin: 0;
       }
 
-      .empty {
-        margin: 0.5rem 0 0 0;
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          scroll-behavior: auto !important;
+          transition: none !important;
+          animation: none !important;
+        }
       }
     `,
   ],

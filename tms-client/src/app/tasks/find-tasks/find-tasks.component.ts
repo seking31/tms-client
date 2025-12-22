@@ -20,10 +20,7 @@ import { Task } from '../task';
       <a class="skip-link" href="#main-content">Skip to search</a>
 
       <header class="page-header">
-        <h1 id="page-title" class="task-find-page_title">Find task</h1>
-        <p class="task-find-page_subtitle">
-          Enter at least 3 characters to search for tasks by name.
-        </p>
+        <h1 id="page-title" class="task-find-page_title">Search Tasks</h1>
       </header>
 
       <!-- Live status for search lifecycle -->
@@ -103,8 +100,6 @@ import { Task } from '../task';
             <button type="button" class="task_btn secondary" (click)="clear()">
               Clear
             </button>
-
-            <a class="link" routerLink="/tasks">Return</a>
           </div>
         </form>
 
@@ -193,13 +188,11 @@ import { Task } from '../task';
       }
 
       .task-find-page_title {
-        text-align: center;
         color: var(--dark_blue);
         margin: 0 0 0.25rem;
       }
 
       .task-find-page_subtitle {
-        text-align: center;
         color: var(--medium_blue);
         margin: 0;
         font-size: 0.95rem;

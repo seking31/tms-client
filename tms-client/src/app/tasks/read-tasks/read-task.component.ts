@@ -19,7 +19,7 @@ import { Task } from '../task';
       <a class="skip-link" href="#task-details">Skip to task details</a>
 
       <header class="page-header">
-        <h1 id="page-title" class="title">Task details</h1>
+        <h1 id="page-title" class="title">Select Task</h1>
         <p class="subtitle">Select a task ID to view details.</p>
       </header>
 
@@ -76,7 +76,7 @@ import { Task } from '../task';
             {{ loadingIds ? 'Loading tasks…' : '-- Select a task --' }}
           </option>
           <option *ngFor="let t of tasksList" [value]="t._id">
-            {{ t._id }}
+            {{ t.title || 'Untitled task' }} (ID: {{ t._id }})
           </option>
         </select>
 
@@ -134,16 +134,6 @@ import { Task } from '../task';
             </div>
           </dl>
         </article>
-
-        <p
-          *ngIf="!loading && !error && !task"
-          class="status"
-          role="status"
-          aria-live="polite"
-          aria-atomic="true"
-        >
-          Select a task to see details.
-        </p>
       </div>
     </section>
   `,

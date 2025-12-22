@@ -22,7 +22,7 @@ import { ProjectService } from '../projects.service';
       <a class="skip-link" href="#main-content">Skip to add project form</a>
 
       <header class="page-header">
-        <h1 class="page_title" id="page-title">Add new project</h1>
+        <h1 class="page_title" id="page-title">Add New Project</h1>
         <p class="page_subtitle" id="page-subtitle">
           Create a project by providing its name, description, and dates.
         </p>
