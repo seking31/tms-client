@@ -20,7 +20,7 @@ import { TaskService } from '../tasks.service';
       <a class="skip-link" href="#task-list">Skip to task list</a>
 
       <header class="page-header">
-        <h1 id="page-title">All tasks</h1>
+        <h1 id="page-title">All Tasks</h1>
       </header>
 
       <!-- Live region for loading + summary -->

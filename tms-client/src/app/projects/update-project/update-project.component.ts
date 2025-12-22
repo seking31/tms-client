@@ -237,13 +237,11 @@ import { ProjectService } from '../projects.service';
     }
 
     .project-update_title {
-      text-align: center;
       color: var(--dark_blue);
       margin-bottom: 0.25rem;
     }
 
     .project-update_subtitle {
-      text-align: center;
       color: var(--medium_blue);
       font-size: 0.95rem;
       font-style: italic;
@@ -252,7 +250,6 @@ import { ProjectService } from '../projects.service';
 
     .update-project_form-container {
       width: min(60%, 720px);
-      margin: 0 auto;
       border-radius: 0.5rem;
       box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
       padding: 1.5rem;

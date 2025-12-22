@@ -16,7 +16,7 @@ import { Project } from '../project';
       <a class="skip-link" href="#project-content">Skip to project details</a>
 
       <header class="page-header">
-        <h1 id="project-page-title">Project details</h1>
+        <h1 id="project-page-title">Select Project</h1>
       </header>
 
       <!-- Live region for async states (loading/error/success) -->

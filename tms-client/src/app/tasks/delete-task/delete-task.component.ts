@@ -19,10 +19,6 @@ import { TaskService } from '../tasks.service';
     <main class="task-container" aria-labelledby="page-title">
       <h1 id="page-title" class="page-title">Delete Task</h1>
 
-      <p class="page-subtitle">
-        Select a task ID to delete. This action cannot be undone.
-      </p>
-
       <!-- Status messages (announced) -->
       <div class="status" role="status" aria-live="polite" aria-atomic="true">
         <p *ngIf="loadingIds" class="status-text">Loading task IDs…</p>

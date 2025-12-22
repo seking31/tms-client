@@ -206,7 +206,7 @@ type MenuKey = 'tasks' | 'projects' | null;
       </main>
 
       <footer class="footer" role="contentinfo">
-        <p class="footer_text">&copy;2025 MEAN Stack - Group Project</p>
+        <p class="footer_text">&copy;2025 MEAN Stack Project</p>
       </footer>
     </div>
   `,

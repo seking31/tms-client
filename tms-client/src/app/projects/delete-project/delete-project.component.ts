@@ -17,11 +17,6 @@ import { Subject, finalize, takeUntil } from 'rxjs';
   template: `
     <main class="project-container" aria-labelledby="page-title">
       <h1 id="page-title" class="page-title">Delete Project</h1>
-
-      <p class="page-subtitle">
-        Select a project ID to delete. This action cannot be undone.
-      </p>
-
       <!-- Status messages (announced) -->
       <div class="status" role="status" aria-live="polite" aria-atomic="true">
         <p *ngIf="loadingIds" class="status-text">Loading project IDs…</p>
