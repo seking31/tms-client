@@ -13,7 +13,6 @@ export class TaskService {
   }
 
   getTaskById(id: string): Observable<Task> {
-    console.log(`${environment.apiBaseUrl}api/tasks/${id}`);
     return this.http.get<Task>(`${environment.apiBaseUrl}/api/tasks/${id}`);
   }
 

@@ -76,7 +76,7 @@ import { Subject, finalize, takeUntil } from 'rxjs';
       <div class="actions">
         <button
           type="button"
-          class="btn danger"
+          class="btn"
           [disabled]="!selectedId || loadingIds || loading"
           [attr.aria-disabled]="
             !selectedId || loadingIds || loading ? 'true' : null
@@ -170,20 +170,6 @@ import { Subject, finalize, takeUntil } from 'rxjs';
         gap: 0.75rem;
         margin-top: 1rem;
         flex-wrap: wrap;
-      }
-
-      .btn {
-        border: 1px solid #333;
-        border-radius: 6px;
-        padding: 0.5rem 0.9rem;
-        cursor: pointer;
-        background: transparent;
-      }
-
-      .btn[aria-disabled='true'],
-      .btn:disabled {
-        opacity: 0.65;
-        cursor: not-allowed;
       }
 
       .danger {

@@ -375,7 +375,7 @@ import { ProjectService } from '../../projects/projects.service';
               <span *ngIf="submitting">Adding…</span>
             </button>
 
-            <a class="link" routerLink="/tasks">Return</a>
+            <a class="btn" routerLink="/tasks">Return</a>
           </div>
         </form>
       </div>
