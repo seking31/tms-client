@@ -198,7 +198,7 @@ import { ProjectService } from '../projects.service';
 
           <div class="actions">
             <button
-              class="btn project-update_btn"
+              class="btn"
               type="submit"
               [disabled]="
                 submitting ||
@@ -217,9 +217,7 @@ import { ProjectService } from '../projects.service';
               <span *ngIf="submitting">Updating…</span>
             </button>
 
-            <a class="project-update_link link" routerLink="/projects">
-              Return
-            </a>
+            <a class="btn" routerLink="/projects"> Return </a>
           </div>
         </form>
       </div>

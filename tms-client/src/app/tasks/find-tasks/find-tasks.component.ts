@@ -87,7 +87,7 @@ import { Task } from '../task';
           <div class="actions">
             <button
               type="submit"
-              class="task_btn"
+              class="btn"
               [disabled]="taskForm.invalid || searching"
               [attr.aria-disabled]="
                 taskForm.invalid || searching ? 'true' : null
@@ -97,7 +97,7 @@ import { Task } from '../task';
               <span *ngIf="searching">Searching…</span>
             </button>
 
-            <button type="button" class="task_btn secondary" (click)="clear()">
+            <button type="button" class="btn secondary" (click)="clear()">
               Clear
             </button>
           </div>
@@ -272,35 +272,6 @@ import { Task } from '../task';
         gap: 0.75rem;
         align-items: center;
         flex-wrap: wrap;
-      }
-
-      .task_btn {
-        padding: 0.65rem 1.1rem;
-        border: none;
-        background-color: var(--dark_blue);
-        color: white;
-        cursor: pointer;
-        font-size: 1rem;
-        border-radius: 0.35rem;
-      }
-
-      .task_btn.secondary {
-        background: transparent;
-        color: inherit;
-        border: 2px solid currentColor;
-      }
-
-      .task_btn:disabled {
-        opacity: 0.55;
-        cursor: not-allowed;
-      }
-
-      .task_btn:focus-visible,
-      .task-add-page_form-control:focus-visible,
-      .link:focus-visible {
-        outline: 3px solid currentColor;
-        outline-offset: 3px;
-        border-radius: 0.35rem;
       }
 
       .status {
